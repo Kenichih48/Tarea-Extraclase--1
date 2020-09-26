@@ -7,6 +7,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+        
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -18,7 +22,6 @@ import java.util.StringTokenizer;
  * @author kenic
  */
 public class Server extends javax.swing.JFrame {
-
     /**
      * Creates new form Server
      */
@@ -55,7 +58,7 @@ public class Server extends javax.swing.JFrame {
                         new MsgRead(s,i).start();
                         new PrepareClientList().start();
                     }                
-                } catch(Exception ex) {
+                } catch(IOException ex) {
                     ex.printStackTrace();
                 }
             }
@@ -137,10 +140,38 @@ public class Server extends javax.swing.JFrame {
     
     }
     class PrepareClientList extends Thread{
-        public void run(){
         
+        public void run(){
+            try {
+                String ids = "";
+                Set k = clientColl.keySet();
+                Iterator itr = k.iterator();
+                while(itr.hasNext()){
+                    String key = (String)itr.next();
+                    ids += key+",";
+                }
+                if(ids.length()!=0)
+                    ids = ids.substring(0, ids.length()-1);
+                    itr = k.iterator();
+                    while(itr.hasNext()){
+                        String key = (String)itr.next();
+                        try{
+                            new DataOutputStream(((Socket)clientColl.get(key)).getOutputStream()).writeUTF(":;.,/="+ids);                            
+                        } catch (Exception ex) {
+                            clientColl.remove(key);
+                            msgBox.append(key+": removed!");
+                        }
+                    }
+                    
+                
+            
+            }catch(Exception ex)
+            {
+                ex.printStackTrace();
+            }
+                        
         }
-    }
+    }        
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -152,18 +183,19 @@ public class Server extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        jScrollPane1 = new javax.swing.JScrollPane();
         msgBox = new javax.swing.JTextArea();
         jLabel1 = new javax.swing.JLabel();
         sStatus = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("MyServer");
 
         jPanel1.setBackground(new java.awt.Color(204, 255, 255));
 
         msgBox.setColumns(20);
         msgBox.setRows(5);
-        jScrollPane2.setViewportView(msgBox);
+        jScrollPane1.setViewportView(msgBox);
 
         jLabel1.setBackground(new java.awt.Color(102, 102, 0));
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
@@ -178,32 +210,30 @@ public class Server extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(44, 44, 44)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 430, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel1)
-                        .addGap(50, 50, 50)
-                        .addComponent(sStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 351, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(50, Short.MAX_VALUE))
+                        .addGap(49, 49, 49)
+                        .addComponent(sStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(46, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(52, 52, 52)
+                .addGap(32, 32, 32)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(sStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(33, 33, 33)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 347, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(17, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 386, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(20, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 173, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -253,7 +283,7 @@ public class Server extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea msgBox;
     private javax.swing.JLabel sStatus;
     // End of variables declaration//GEN-END:variables
